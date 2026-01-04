@@ -724,9 +724,9 @@ jobs:
           fi
           # patch bultin分支最新的修改，导致了一个bug，这里直接patch掉原本的逻辑，强制改为固定的宏定义
           # 先删除该文件中所有关于 SYSTEM_PACKAGES_LIST_PATH 的定义行（清理掉逻辑炸弹）
-          sed -i '/#define SYSTEM_PACKAGES_LIST_PATH/d' kernel/throne_tracker.c
+          sed -i '/#define SYSTEM_PACKAGES_LIST_PATH/d' kernel_platform/kernel/throne_tracker.c
           # 在文件第一行插入唯一的、正确的标准定义
-          sed -i '1i #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"' kernel/throne_tracker.c
+          sed -i '1i #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"' kernel_platform/kernel/throne_tracker.c
 
       # OGKI转换GKI，无需修改 dtbo 开机
       - name: Apply Convert HMBIRD_OGKI to HMBIRD_GKI
