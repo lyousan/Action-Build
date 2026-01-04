@@ -1060,7 +1060,12 @@ jobs:
             cp "$image_path" ./AnyKernel3/Image
             cp "$image_path" kernel_workspace/kernel_platform/out/Final-Image-Find/Image
           fi
-
+          
+      - name: Disable KPTI
+        run: |
+          cd kernel_workspace/kernel_platform/common
+          sed -i 's/CONFIG_UNMAP_KERNEL_AT_EL0=y/CONFIG_UNMAP_KERNEL_AT_EL0=n/g' arch/arm64/configs/gki_defconfig
+          
       - name: Apply patch_linux and Replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
