@@ -14,7 +14,7 @@ on:
           - oneplus_ace_race_v
           - oneplus_10_pro_v
           - oneplus_10t_v
-          - oneplus_11r_v
+          - oneplus_11r_b
           - oneplus_ace2_b
           - oneplus_pad_lite_v
           - oneplus_pad_mt6983_v
@@ -1084,7 +1084,8 @@ jobs:
       - name: Apply patch_linux and Replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
-          PATCH_DIR="${GITHUB_WORKSPACE}/kernel_workspace/SukiSU_patch/kpm"
+          # PATCH_DIR="${GITHUB_WORKSPACE}/kernel_workspace/SukiSU_patch/kpm"
+          PATCH_DIR="${GITHUB_WORKSPACE}/kernel_workspace/Action-Build/patches"
           OUT_DIR="${GITHUB_WORKSPACE}/kernel_workspace/kernel_platform/out/Final-Image-Find"
           cd "${OUT_DIR}"
           cp "${PATCH_DIR}/patch_linux" .
