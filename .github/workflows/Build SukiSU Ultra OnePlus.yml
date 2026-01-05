@@ -955,25 +955,25 @@ jobs:
           echo "Disabling GPUEB for MTK kernel 5.10"
           sed -i '/obj-y.*gpueb/d' kernel_workspace/kernel-5.10/drivers/gpu/mediatek/Makefile
 
-      - name: Hardened Kernel for SukiSU (Force Overwrite)
-        run: |
-          # 找到所有名为 gki_defconfig 的路径进行预修改
-          ALL_CONFIGS=$(find . -name "gki_defconfig")
-          for cfg in $ALL_CONFIGS; do
-            echo "Patching $cfg"
-            sed -i 's/CONFIG_RANDOMIZE_BASE=y/CONFIG_RANDOMIZE_BASE=n/g' $cfg
-            sed -i 's/CONFIG_CFI_CLANG=y/CONFIG_CFI_CLANG=n/g' $cfg
-            sed -i 's/CONFIG_ARM64_PTR_AUTH=y/CONFIG_ARM64_PTR_AUTH=n/g' $cfg
-            sed -i 's/CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/g' $cfg
-            sed -i 's/CONFIG_STRICT_KERNEL_RWX=y/CONFIG_STRICT_KERNEL_RWX=n/g' $cfg
-            sed -i 's/CONFIG_STRICT_MODULE_RWX=y/CONFIG_STRICT_MODULE_RWX=n/g' $cfg
-            echo "CONFIG_KALLSYMS=y" >> $cfg
-            echo "CONFIG_KALLSYMS_ALL=y" >> $cfg
-          done
+      # - name: Hardened Kernel for SukiSU (Force Overwrite)
+      #   run: |
+      #     # 找到所有名为 gki_defconfig 的路径进行预修改
+      #     ALL_CONFIGS=$(find . -name "gki_defconfig")
+      #     for cfg in $ALL_CONFIGS; do
+      #       echo "Patching $cfg"
+      #       sed -i 's/CONFIG_RANDOMIZE_BASE=y/CONFIG_RANDOMIZE_BASE=n/g' $cfg
+      #       sed -i 's/CONFIG_CFI_CLANG=y/CONFIG_CFI_CLANG=n/g' $cfg
+      #       sed -i 's/CONFIG_ARM64_PTR_AUTH=y/CONFIG_ARM64_PTR_AUTH=n/g' $cfg
+      #       sed -i 's/CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/g' $cfg
+      #       sed -i 's/CONFIG_STRICT_KERNEL_RWX=y/CONFIG_STRICT_KERNEL_RWX=n/g' $cfg
+      #       sed -i 's/CONFIG_STRICT_MODULE_RWX=y/CONFIG_STRICT_MODULE_RWX=n/g' $cfg
+      #       echo "CONFIG_KALLSYMS=y" >> $cfg
+      #       echo "CONFIG_KALLSYMS_ALL=y" >> $cfg
+      #     done
           
-          # 特别针对一加 8G3 平台的特殊处理：禁用碎片化配置覆盖
-          # 有些脚本会动态生成配置，我们直接在全局环境禁用 CFI
-          export EXTRA_WM_CFLAGS="-mno-implicit-float -fno-asynchronous-unwind-tables -fno-unwind-tables"
+      #     # 特别针对一加 8G3 平台的特殊处理：禁用碎片化配置覆盖
+      #     # 有些脚本会动态生成配置，我们直接在全局环境禁用 CFI
+      #     export EXTRA_WM_CFLAGS="-mno-implicit-float -fno-asynchronous-unwind-tables -fno-unwind-tables"
       
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
