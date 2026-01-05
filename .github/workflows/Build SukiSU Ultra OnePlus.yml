@@ -1061,37 +1061,25 @@ jobs:
             cp "$image_path" kernel_workspace/kernel_platform/out/Final-Image-Find/Image
           fi
           
-      - name: Hardened Kernel for SukiSU (Patch for 8G3/5.15)
+      - name: Hardened Kernel for SukiSU (Force Overwrite)
         run: |
-          # 定义配置文件路径，根据你的源码路径可能需要微调
-          DEFCONFIG="kernel_workspace/kernel_platform/common/arch/arm64/configs/gki_defconfig"
+          # 找到所有名为 gki_defconfig 的路径进行预修改
+          ALL_CONFIGS=$(find . -name "gki_defconfig")
+          for cfg in $ALL_CONFIGS; do
+            echo "Patching $cfg"
+            sed -i 's/CONFIG_RANDOMIZE_BASE=y/CONFIG_RANDOMIZE_BASE=n/g' $cfg
+            sed -i 's/CONFIG_CFI_CLANG=y/CONFIG_CFI_CLANG=n/g' $cfg
+            sed -i 's/CONFIG_ARM64_PTR_AUTH=y/CONFIG_ARM64_PTR_AUTH=n/g' $cfg
+            sed -i 's/CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/g' $cfg
+            sed -i 's/CONFIG_STRICT_KERNEL_RWX=y/CONFIG_STRICT_KERNEL_RWX=n/g' $cfg
+            sed -i 's/CONFIG_STRICT_MODULE_RWX=y/CONFIG_STRICT_MODULE_RWX=n/g' $cfg
+            echo "CONFIG_KALLSYMS=y" >> $cfg
+            echo "CONFIG_KALLSYMS_ALL=y" >> $cfg
+          done
           
-          echo "Checking defconfig at $DEFCONFIG"
-          
-          # 1. 禁用 KPTI 和 CFI (解决卡解锁界面的核心)
-          sed -i 's/CONFIG_UNMAP_KERNEL_AT_EL0=y/CONFIG_UNMAP_KERNEL_AT_EL0=n/g' $DEFCONFIG
-          sed -i 's/CONFIG_CFI_CLANG=y/CONFIG_CFI_CLANG=n/g' $DEFCONFIG
-          
-          # 2. 禁用内核地址随机化 (解决 can't find arm64 relocation table 问题)
-          # 这能让内核地址固定，方便 patch_linux 精准注入
-          sed -i 's/CONFIG_RANDOMIZE_BASE=y/CONFIG_RANDOMIZE_BASE=n/g' $DEFCONFIG
-          
-          # 3. 强制关闭内存写入保护 (允许 KPM 动态修改内核)
-          sed -i 's/CONFIG_STRICT_KERNEL_RWX=y/CONFIG_STRICT_KERNEL_RWX=n/g' $DEFCONFIG
-          sed -i 's/CONFIG_STRICT_MODULE_RWX=y/CONFIG_STRICT_MODULE_RWX=n/g' $DEFCONFIG
-          
-          # 4. 降低 LTO 等级 (防止符号表被 Clang 优化掉)
-          sed -i 's/CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/g' $DEFCONFIG
-          
-          # 5. 补全 Kallsyms 符号表 (确保 patch_linux 能找到 printk 等函数)
-          sed -i 's/# CONFIG_KALLSYMS_ALL is not set/CONFIG_KALLSYMS_ALL=y/g' $DEFCONFIG
-          echo "CONFIG_KALLSYMS=y" >> $DEFCONFIG
-          echo "CONFIG_KALLSYMS_ALL=y" >> $DEFCONFIG
-          
-          # 6. 禁用指针验证 PAC (解决 pac verify not pair 警告)
-          sed -i 's/CONFIG_ARM64_PTR_AUTH=y/CONFIG_ARM64_PTR_AUTH=n/g' $DEFCONFIG
-
-          echo "Defconfig patched successfully."
+          # 特别针对一加 8G3 平台的特殊处理：禁用碎片化配置覆盖
+          # 有些脚本会动态生成配置，我们直接在全局环境禁用 CFI
+          export EXTRA_WM_CFLAGS="-mno-implicit-float -fno-asynchronous-unwind-tables -fno-unwind-tables"
           
       - name: Apply patch_linux and Replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
